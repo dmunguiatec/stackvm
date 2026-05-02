@@ -1,0 +1,17 @@
+.def main: args=0, locals=0
+    sconst "Hola mundo!"
+    print
+
+    iconst 5
+    print
+
+    fconst 3.14159
+    print
+
+    cconst 'x'
+    print
+
+    null
+    print
+
+    halt

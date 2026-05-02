@@ -8,8 +8,8 @@
 	ret
 cont:
 ;	return n * fact(n-1)
-	load 0 ; n
-	load 0
+	load 0 ; push n
+	load 0 ; push n
 	iconst 1
 	isub  ; n - 1
 	call fact()

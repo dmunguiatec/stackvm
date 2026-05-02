@@ -186,7 +186,8 @@ private fun Interpreter.ret() {
 }
 
 private fun Interpreter.jmp() {
-    this.ip = this.opStack[this.sp--] as Int
+    val address = consumeInstructionOperand().toIntBigEndian()
+    this.ip = address
 }
 
 private fun Interpreter.jmpt() {
@@ -243,7 +244,7 @@ private fun Interpreter.gstore() {
 }
 
 private fun Interpreter.print() {
-    print(this.opStack[this.sp--])
+    println(this.opStack[this.sp--])
 }
 
 private fun Interpreter.nullop() {

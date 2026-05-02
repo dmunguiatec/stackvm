@@ -59,7 +59,7 @@ label
     :   ID ':' {defineLabel($ID);}
     ;
 
-ID  :   LETTER (LETTER | '0'..'9')* ;
+ID  :   (LETTER | '_') (LETTER | '_' | '0'..'9')* ;
 
 FUNC:   ID '()' {setText(getText().substring(0, getText().length() - 2));} ;
 

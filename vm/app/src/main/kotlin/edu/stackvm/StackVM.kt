@@ -1,6 +1,7 @@
 package edu.stackvm
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -30,7 +31,7 @@ private const val MODE_ASSEMBLE = "assemble"
 private const val MODE_DISASSEMBLE = "disassemble"
 private const val MODE_RUN = "run"
 
-class CommandLine : CliktCommand() {
+class CommandLine : CliktCommand(name = "stackvm") {
     val mode by option("--mode", help = "operation mode")
         .choice(MODE_ASSEMBLE, MODE_DISASSEMBLE, MODE_RUN)
         .required()
@@ -56,10 +57,12 @@ class CommandLine : CliktCommand() {
     val outputFile by option("-o", "--output", help = "output file")
         .path(mustExist = false, canBeFile = true, canBeDir = false, mustBeWritable = false)
 
-    val stackSize: Int by option("-s", "--stack-size", help = "vm stack size").int()
+    val stackSize: Int by option("-s", "--stack-size", help = "vm stack size (default: 1024 entries)").int()
         .default(DEFAULT_OPERAND_STACK_SIZE)
-    val callStackSize: Int by option("-c", "--call-stack-size", help = "vm call stack size").int()
+    val callStackSize: Int by option("-c", "--call-stack-size", help = "vm call stack size (default: 1024 entries)").int()
         .default(DEFAULT_CALL_STACK_SIZE)
+
+    override fun help(context: Context): String = "Stack-based virtual machine toolkit"
 
     override fun run() {
         if (this.mode == MODE_ASSEMBLE && this.outputFile == null) {

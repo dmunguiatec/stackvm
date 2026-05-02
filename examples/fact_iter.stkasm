@@ -1,0 +1,52 @@
+.def fact_iter: args=1, locals=2
+; locals:
+;   1: i
+;   2: result
+
+; result <- 1
+    iconst 1
+    store 2
+
+; i <- 2
+    iconst 2
+    store 1
+
+loop:
+; while i <= n
+
+    load 0        ; n (argument)
+    load 1        ; i
+    ilt           ; n < i ?
+    jmpf body     ; if false, execute body
+
+; if true, exit loop
+    load 2        ; result
+    ret
+
+body:
+; result = result * i
+    load 2
+    load 1
+    imul
+    store 2
+
+; i = i + 1
+    load 1
+    iconst 1
+    iadd
+    store 1
+
+    jmp loop
+
+
+.def main: args=0, locals=0
+; print fact_iter(5)
+
+    sconst "Factorial de 5: "
+    print
+
+    iconst 5
+    call fact_iter()
+    print
+
+    halt

@@ -1,0 +1,2 @@
+.globals 1
+.def main: args=1, locals=2
