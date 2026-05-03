@@ -31,7 +31,8 @@ enum class Bytecode(val code: UByte, val instruction: String, val operandCount: 
     POP(27u,"pop"),     // stack pop and throw away value
     HALT(28u,"halt"),    // stop program execution
     DUP(29u, "dup"),    // duplicates the top of the stack
-    SWAP(30u, "swap");  // swaps the top two operands on the stack
+    SWAP(30u, "swap"),  // swaps the top two operands on the stack
+    ASSERT(31u, "assert", operandCount = 1); // asserts that the top of the stack is equal to the given operand
 
     companion object {
         private val instructionMap = entries.associateBy(Bytecode::instruction)

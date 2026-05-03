@@ -1,2 +1,276 @@
-.globals 1
+; Comprehensive integration test suite for the VM
+; Covers all documented instructions
+
+.globals 3
+
+; =========================================================
+; Helper functions
+; =========================================================
+
+.def identity: args=1, locals=0
+    load 0
+    ret
+
+.def inc: args=1, locals=0
+    load 0
+    iconst 1
+    iadd
+    ret
+
+.def add2: args=2, locals=0
+    load 0
+    load 1
+    iadd
+    ret
+
+.def local_test: args=1, locals=2
+    ; args[0] = input
+    ; locals[1], locals[2]
+
+    load 0
+    store 1          ; local_1 = input
+
+    iconst 99
+    store 2          ; local_2 = 99
+
+    load 1
+    load 2
+    iadd             ; input + 99
+    ret
+
+; =========================================================
+; Main test runner
+; =========================================================
+
 .def main: args=1, locals=2
+
+    ; -----------------------------------------------------
+    ; Constants & Literals
+    ; -----------------------------------------------------
+
+    iconst 1
+    assert 1
+
+    fconst 1.0
+    assert 1.0
+
+    cconst 'x'
+    assert 'x'
+
+    sconst "Hello World!"
+    assert "Hello World!"
+
+    ; -----------------------------------------------------
+    ; Integer Arithmetic
+    ; -----------------------------------------------------
+
+    iconst 10
+    iconst 20
+    iadd
+    assert 30
+
+    iconst 5
+    iconst 2
+    isub
+    assert 3
+
+    iconst 3
+    iconst 5
+    imul
+    assert 15
+
+    ; -----------------------------------------------------
+    ; Floating Arithmetic
+    ; -----------------------------------------------------
+
+    fconst 1.1
+    fconst 2.0
+    fadd
+    assert 3.1
+
+    fconst 3.0
+    fconst 2.0
+    fsub
+    assert 1.0
+
+    fconst 5.0
+    fconst 0.5
+    fmul
+    assert 2.5
+
+    ; -----------------------------------------------------
+    ; Comparisons
+    ; -----------------------------------------------------
+
+    iconst 10
+    iconst 20
+    ilt
+    assert 1
+
+    iconst 20
+    iconst 10
+    ilt
+    assert 0
+
+    iconst 10
+    iconst 10
+    ieq
+    assert 1
+
+    iconst 10
+    iconst 11
+    ieq
+    assert 0
+
+    fconst 0.1
+    fconst 2.0
+    flt
+    assert 1
+
+    fconst 2.0
+    fconst 0.1
+    flt
+    assert 0
+
+    fconst 0.1
+    fconst 0.1
+    feq
+    assert 1
+
+    fconst 0.1
+    fconst 0.2
+    feq
+    assert 0
+
+    ; -----------------------------------------------------
+    ; Type Conversion
+    ; -----------------------------------------------------
+
+    iconst 10
+    itof
+    assert 10.0
+
+    ; -----------------------------------------------------
+    ; Functions
+    ; -----------------------------------------------------
+
+    iconst 5
+    call identity()
+    assert 5
+
+    iconst 5
+    call inc()
+    assert 6
+
+    iconst 10
+    iconst 20
+    call add2()
+    assert 30
+
+    ; -----------------------------------------------------
+    ; Memory Access (locals)
+    ; -----------------------------------------------------
+
+    iconst 42
+    store 1
+    load 1
+    assert 42
+
+    iconst 7
+    call local_test()
+    assert 106
+
+    ; -----------------------------------------------------
+    ; Memory Access (globals)
+    ; -----------------------------------------------------
+
+    iconst 100
+    gstore 0
+    gload 0
+    assert 100
+
+    sconst "global"
+    gstore 1
+    gload 1
+    assert "global"
+
+    ; -----------------------------------------------------
+    ; Stack Manipulation
+    ; -----------------------------------------------------
+
+    iconst 10
+    iconst 20
+    pop
+    assert 10
+
+    iconst 7
+    dup
+    iadd
+    assert 14
+
+    iconst 1
+    iconst 2
+    swap
+    assert 1
+    assert 2
+
+    ; -----------------------------------------------------
+    ; Control Flow
+    ; -----------------------------------------------------
+
+    ; jmp
+    jmp after_jump
+
+    iconst 999
+    assert 0          ; must never execute
+
+after_jump:
+    iconst 1
+    assert 1
+
+    ; jmpt
+    iconst 1
+    jmpt true_branch
+
+    iconst 999
+    assert 0
+
+true_branch:
+    iconst 1
+    assert 1
+
+    ; jmpf
+    iconst 0
+    jmpf false_branch
+
+    iconst 999
+    assert 0
+
+false_branch:
+    iconst 1
+    assert 1
+
+    ; -----------------------------------------------------
+    ; I/O smoke test
+    ; -----------------------------------------------------
+
+    sconst "print test"
+    print
+
+    iconst 123
+    print
+
+    fconst 9.99
+    print
+
+    cconst 'z'
+    print
+
+    null
+    print
+
+    ; -----------------------------------------------------
+    ; End
+    ; -----------------------------------------------------
+
+    halt

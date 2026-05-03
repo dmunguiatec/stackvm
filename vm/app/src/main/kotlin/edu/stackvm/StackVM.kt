@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
@@ -61,38 +62,62 @@ class CommandLine : CliktCommand(name = "stackvm") {
         .default(DEFAULT_OPERAND_STACK_SIZE)
     val callStackSize: Int by option("-c", "--call-stack-size", help = "vm call stack size (default: 1024 entries)").int()
         .default(DEFAULT_CALL_STACK_SIZE)
+    val args: List<String> by option("-a", "--args", help = "arguments to pass to the program").multiple()
 
     override fun help(context: Context): String = "Stack-based virtual machine toolkit"
 
     override fun run() {
-        if (this.mode == MODE_ASSEMBLE && this.outputFile == null) {
-            fail("--output is required when --mode=assemble")
+        try {
+            if (this.mode == MODE_ASSEMBLE && this.outputFile == null) {
+                fail("--output is required when --mode=assemble")
+            }
+
+            if (this.mode == MODE_ASSEMBLE) {
+                val progDef = Assembler(this.inputFile.toString()).generateBytecode()
+                ProgDefSerializer().serialize(progDef, FileOutputStream(this.outputFile.toString()))
+            }
+
+            if (this.mode == MODE_DISASSEMBLE) {
+                val deserializedProgDef = ProgDefDeserializer()
+                    .deserialize(FileInputStream(this.inputFile.toString()))
+                val disassembler = Disassembler(deserializedProgDef)
+                disassembler.decodeInstructions()
+            }
+
+            if (this.mode == MODE_RUN) {
+                val deserializedProgDef = ProgDefDeserializer()
+                    .deserialize(FileInputStream(this.inputFile.toString()))
+
+                val interpreter = Interpreter(
+                    deserializedProgDef, processArgs(this.args),
+                    this.stackSize,
+                    this.callStackSize
+                )
+
+                interpreter.run()
+            }
+        } catch (e: Exception) {
+            e.message?.let { println("Error: $it") }
         }
+    }
 
-        if (this.mode == MODE_ASSEMBLE) {
-            val progDef = Assembler(this.inputFile.toString()).generateBytecode()
-            ProgDefSerializer().serialize(progDef, FileOutputStream(this.outputFile.toString()))
-        }
-
-        if (this.mode == MODE_DISASSEMBLE) {
-            val deserializedProgDef = ProgDefDeserializer()
-                .deserialize(FileInputStream(this.inputFile.toString()))
-            val disassembler = Disassembler(deserializedProgDef)
-            disassembler.decodeInstructions()
-        }
-
-        if (this.mode == MODE_RUN) {
-            val deserializedProgDef = ProgDefDeserializer()
-                .deserialize(FileInputStream(this.inputFile.toString()))
-
-            val interpreter = Interpreter(
-                deserializedProgDef, emptyArray(),
-                this.stackSize,
-                this.callStackSize
-            )
-
-            interpreter.run()
-        }
+    private fun processArgs(args: List<String>): Array<Any> {
+        return args.map { arg ->
+            when {
+                arg.toIntOrNull() != null -> {
+                    arg.toInt()
+                }
+                arg.toFloatOrNull() != null -> {
+                    arg.toFloat()
+                }
+                arg.length == 1 -> {
+                    arg.toCharArray()[0]
+                }
+                else -> {
+                    arg
+                }
+            }
+        }.toTypedArray()
     }
 }
 

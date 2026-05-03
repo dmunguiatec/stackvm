@@ -4,6 +4,7 @@ import edu.stackvm.bytes.WORD_SIZE
 import edu.stackvm.bytes.toCharBigEndian
 import edu.stackvm.bytes.toFloatBigEndian
 import edu.stackvm.bytes.toIntBigEndian
+import edu.stackvm.bytes.toWordBigEndian
 import edu.stackvm.progdef.Bytecode
 import edu.stackvm.progdef.Bytecode.*
 import edu.stackvm.progdef.FuncDef
@@ -15,6 +16,8 @@ private const val ENTRYPOINT_IDENTIFIER = "main"
 private const val REG_UNDEFINED = -1
 private const val BOOLEAN_TRUE = 1
 private const val BOOLEAN_FALSE = 0
+
+private const val DUMP_BYTE_COUNT = 16
 
 class Interpreter(
     val progDef: ProgDef,
@@ -31,12 +34,21 @@ class Interpreter(
     var ip = REG_UNDEFINED
 
     fun run() {
-        callEntrypoint()
+        try {
+            callEntrypoint()
+        } catch (e: Exception) {
+            e.message?.let { println("Error: $it") }
+            coreDump()
+        }
     }
 
     private fun callEntrypoint() {
         val entryPoint = this.progDef.entryPoint
         val entryPointCall = StackFrame(entryPoint, 0)
+
+        if (entryPointCall.funcDef.args_count != args.size) {
+            error("Expected ${entryPointCall.funcDef.args_count} arguments, got ${args.size}")
+        }
 
         repeat(entryPointCall.funcDef.args_count) { i ->
             entryPointCall.locals[i] = args[i]
@@ -83,12 +95,68 @@ class Interpreter(
                 POP -> pop()
                 DUP -> dup()
                 SWAP -> swap()
+                ASSERT -> assertop()
 
                 else -> error("Unknown instruction: $bytecode at address ${this.ip - 1}.")
             }
 
             bytecode = Bytecode.fromBytecode(this.progDef.code[this.ip])
         }
+    }
+
+    private fun coreDump() {
+        println("Core dump:")
+        if (this.progDef.static.isNotEmpty()) dumpStatic()
+        if (this.globals.isNotEmpty()) dumpGlobals()
+        dumpCodeMemory()
+    }
+
+    private fun dumpStatic() {
+        println(".static")
+        this.progDef.static.forEachIndexed { address, staticObject ->
+            if (staticObject is StringLiteral) {
+                System.out.printf("%04d: \"%s\"\n", address, staticObject.value)
+            } else {
+                System.out.printf("%04d: %s\n", address, staticObject)
+            }
+        }
+        println()
+    }
+
+    private fun dumpGlobals() {
+        println(".globals")
+        globals.forEachIndexed { address, global ->
+            if (global != null) {
+                System.out.printf(
+                    "%04d: %s <%s>\n",
+                    address, global, global.javaClass.getSimpleName()
+                )
+            } else {
+                System.out.printf("%04d: <null>\n", address)
+            }
+        }
+        println()
+    }
+
+    private fun dumpCodeMemory() {
+        println(".registers")
+        System.out.printf("fp: %d\n", this.fp)
+        System.out.printf("sp: %d\n", this.sp)
+        System.out.printf("ip: %d\n", this.ip)
+        println("Operand stack: [${this.opStack.filterNotNull().joinToString(", ")}]")
+        println("Call stack: [${this.callStack.filterNotNull().joinToString(", ") { it.funcDef.identifier }}]")
+        println()
+
+        println(".code")
+        println("${this.progDef.code.size} bytes")
+        var i = 0
+        while (i < this.progDef.code.size) {
+            if (i % DUMP_BYTE_COUNT == 0 && i != 0) println()
+            if (i % DUMP_BYTE_COUNT == 0) System.out.printf("%04d:", i)
+            print("%02X ".format(this.progDef.code[i].toInt()))
+            i++
+        }
+        println()
     }
 
     internal fun consumeInstructionOperand(): UByteArray {
@@ -264,4 +332,24 @@ private fun Interpreter.swap() {
     val operand = this.opStack[this.sp - 1]
     this.opStack[this.sp - 1] = this.opStack[this.sp]
     this.opStack[this.sp] = operand
+}
+
+private fun Interpreter.assertop() {
+    val actual = this.opStack[this.sp--]
+    val expected = when (actual) {
+        is Int -> consumeInstructionOperand().toIntBigEndian()
+        is Float -> consumeInstructionOperand().toFloatBigEndian()
+        is Char -> consumeInstructionOperand().toCharBigEndian()
+        is String -> consumeInstructionOperand().toIntBigEndian().let {
+            if (it < this.progDef.static.size)
+                    (this.progDef.static[it] as StringLiteral).value
+            else
+                it
+        }
+        else -> false
+    }
+
+    if (actual != expected) {
+        throw Exception("Assertion failed: $actual != $expected")
+    }
 }
