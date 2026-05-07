@@ -79,6 +79,11 @@
     imul
     assert 15
 
+    iconst 2
+    iconst -1
+    imul
+    assert -2
+
     ; -----------------------------------------------------
     ; Floating Arithmetic
     ; -----------------------------------------------------
@@ -97,6 +102,11 @@
     fconst 0.5
     fmul
     assert 2.5
+
+    fconst 2.0
+    fconst -1.0
+    fmul
+    assert -2.0
 
     ; -----------------------------------------------------
     ; Comparisons
