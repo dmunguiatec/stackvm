@@ -127,7 +127,7 @@ stackvm --mode run --input <.stk file>
 
 ---
 
-### Virtual Machine Instructions
+# Virtual Machine Instructions
 
 ---
 
@@ -163,15 +163,6 @@ Pushes a literal string value onto the stack
 
 ```
 sconst "Hello World" 
-```
-
-#### null
-
-Pushes a `null` value onto the stack.
-
-```
-null
-print ; prints "null\n" to stdout
 ```
 
 ---
