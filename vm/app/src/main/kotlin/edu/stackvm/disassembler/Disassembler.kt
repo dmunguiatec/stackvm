@@ -63,6 +63,12 @@ class Disassembler(val progDef: ProgDef) {
                 Bytecode.LOAD, Bytecode.GLOAD -> "&${word.toIntBigEndian()}"
                 Bytecode.STORE, Bytecode.GSTORE -> "&${word.toIntBigEndian()}"
                 Bytecode.ASSERT -> "0x${word.toHexString()}"
+                Bytecode.HSTORE -> "&${word.toIntBigEndian()}"
+                Bytecode.HILOAD -> "&${word.toIntBigEndian()}"
+                Bytecode.HFLOAD -> "&${word.toIntBigEndian()}"
+                Bytecode.HCLOAD -> "&${word.toIntBigEndian()}"
+                Bytecode.HSLOAD -> "&${word.toIntBigEndian()}"
+
                 else -> error("instruction not expected to have operands: ${bytecode.instruction}")
             }
 
