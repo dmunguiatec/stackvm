@@ -110,6 +110,7 @@ class Interpreter(
                 HSLOAD -> hsload()
                 SLEN -> slen()
                 SGET -> sget()
+                CTOI -> ctoi()
 
                 else -> error("Unknown instruction: $bytecode at address ${this.ip - 1}.")
             }
@@ -438,4 +439,9 @@ private fun Interpreter.sget() {
     val index = this.opStack[this.sp--] as Int
     val string = this.opStack[this.sp--] as String
     this.opStack[++this.sp] = string[index]
+}
+
+private fun Interpreter.ctoi() {
+    val char = this.opStack[this.sp--] as Char
+    this.opStack[++this.sp] = char.code
 }

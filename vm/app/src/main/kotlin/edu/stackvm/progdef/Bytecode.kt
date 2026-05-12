@@ -41,8 +41,8 @@ enum class Bytecode(val code: UByte, val instruction: String, val operandCount: 
     HCLOAD(37u, "hcload", operandCount = 1), // loads a character value from a heap block
     HSLOAD(38u, "hsload", operandCount = 1), // loads a string value from a heap block
     SLEN(39u, "slen"), // returns the length of a string
-    SGET(40u, "sget"); // returns a character from a string
-
+    SGET(40u, "sget"), // returns a character from a string
+    CTOI(41u, "ctoi"); // converts a character to an integer
 
     companion object {
         private val instructionMap = entries.associateBy(Bytecode::instruction)

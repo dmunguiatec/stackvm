@@ -10,43 +10,42 @@ Simple stack based bytecode virtual machine
 * [Setup](#setup)
 * [Usage](#usage)
 * [Virtual Machine Instructions](#virtual-machine-instructions)
-
     * [Constants & Literals](#constants--literals)
-
         * [cconst](#cconst)
         * [iconst](#iconst)
         * [fconst](#fconst)
         * [sconst](#sconst)
         * [null](#null)
+      
     * [Arithmetic Operations](#arithmetic-operations)
-
         * [iadd](#iadd)
         * [isub](#isub)
         * [imul](#imul)
         * [fadd](#fadd)
         * [fsub](#fsub)
         * [fmul](#fmul)
+      
     * [Comparisons](#comparisons)
-
         * [ilt](#ilt)
         * [ieq](#ieq)
         * [flt](#flt)
         * [feq](#feq)
+      
     * [Type Conversion](#type-conversion)
-
         * [itof](#itof)
+        * [ctoi](#ctoi)
+      
     * [Functions](#functions)
-
         * [call](#call)
         * [ret](#ret)
+      
     * [Control Flow](#control-flow)
-
         * [jmp](#jmp)
         * [jmpt](#jmpt)
         * [jmpf](#jmpf)
         * [halt](#halt)
+      
     * [Memory Access](#memory-access)
-
         * [load](#load)
         * [store](#store)
         * [gload](#gload)
@@ -64,10 +63,9 @@ Simple stack based bytecode virtual machine
         * [sget](#sget)
     
     * [Input / Output](#input--output)
-
         * [print](#print)
+      
     * [Stack Manipulation](#stack-manipulation)
-
         * [pop](#pop)
         * [dup](#dup)
         * [swap](#swap)
@@ -316,7 +314,16 @@ Converts an integer operand to a floating point operand
 iconst 10
 itof ; pushes 10.0 onto the stack
 ```
+Pops operand A and pushes A as its corresponding floating point value onto the stack
 
+#### ctoi
+
+Converts a character operand to an integer operand
+
+```
+cconst 'a'
+ctoi ; pushes 97 onto the stack 
+```
 Pops operand A and pushes A as its corresponding floating point value onto the stack
 
 ---
