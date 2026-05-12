@@ -1,10 +1,13 @@
 package edu.stackvm.interpreter
 
 import edu.stackvm.bytes.WORD_SIZE
+import edu.stackvm.bytes.Word
 import edu.stackvm.bytes.toCharBigEndian
 import edu.stackvm.bytes.toFloatBigEndian
 import edu.stackvm.bytes.toIntBigEndian
 import edu.stackvm.bytes.toWordBigEndian
+import edu.stackvm.heap.ArrayHeap
+import edu.stackvm.heap.Heap
 import edu.stackvm.progdef.Bytecode
 import edu.stackvm.progdef.Bytecode.*
 import edu.stackvm.progdef.FuncDef
@@ -23,11 +26,13 @@ class Interpreter(
     val progDef: ProgDef,
     val args: Array<Any>,
     operandStackSize: Int,
-    callStackSize: Int
+    callStackSize: Int,
+    heapSize: Int
 ) {
     val opStack: Array<Any?> = arrayOfNulls(operandStackSize)
     val callStack: Array<StackFrame?> = arrayOfNulls(callStackSize)
     val globals: Array<Any?> = arrayOfNulls(this.progDef.globalsCount)
+    val heap: Heap = ArrayHeap(heapSize)
 
     var fp = REG_UNDEFINED
     var sp = REG_UNDEFINED
@@ -96,6 +101,13 @@ class Interpreter(
                 DUP -> dup()
                 SWAP -> swap()
                 ASSERT -> assertop()
+                ALLOC -> alloc()
+                FREE -> free()
+                HSTORE -> hstore()
+                HILOAD -> hiload()
+                HFLOAD -> hfload()
+                HCLOAD -> hcload()
+                HSLOAD -> hsload()
 
                 else -> error("Unknown instruction: $bytecode at address ${this.ip - 1}.")
             }
@@ -312,7 +324,8 @@ private fun Interpreter.gstore() {
 }
 
 private fun Interpreter.print() {
-    println(this.opStack[this.sp--])
+    val operand = this.opStack[this.sp--]
+    println(operand)
 }
 
 private fun Interpreter.nullop() {
@@ -342,10 +355,11 @@ private fun Interpreter.assertop() {
         is Char -> consumeInstructionOperand().toCharBigEndian()
         is String -> consumeInstructionOperand().toIntBigEndian().let {
             if (it < this.progDef.static.size)
-                    (this.progDef.static[it] as StringLiteral).value
+                (this.progDef.static[it] as StringLiteral).value
             else
                 it
         }
+
         else -> false
     }
 
@@ -353,3 +367,63 @@ private fun Interpreter.assertop() {
         throw Exception("Assertion failed: $actual != $expected")
     }
 }
+
+private fun Interpreter.alloc() {
+    val blockSize = this.opStack[this.sp--] as Int
+    val address = this.heap.allocate(blockSize)
+    this.opStack[++this.sp] = address
+}
+
+private fun Interpreter.free() {
+    val address = this.opStack[this.sp--] as Int
+    this.heap.free(address)
+}
+
+private fun Interpreter.hstore() {
+    val heapAddress = consumeInstructionOperand().toIntBigEndian()
+    val offset = this.opStack[this.sp--] as Int
+    val operand = this.opStack[this.sp--]
+
+    val value = when (operand) {
+        is Int -> operand.toWordBigEndian()
+        is Float -> operand.toWordBigEndian()
+        is Char -> operand.toWordBigEndian()
+        is String -> this.progDef.static.indexOfFirst { it is StringLiteral && it.value == operand }.toWordBigEndian()
+        else -> error("Unexpected value in opstack: $operand")
+    }
+
+    this.heap.store(address = heapAddress, offset = offset, value = value)
+}
+
+private fun Interpreter.hiload() {
+    val heapAddress = consumeInstructionOperand().toIntBigEndian()
+    val offset = this.opStack[this.sp--] as Int
+
+    val value: Word = this.heap.load(address = heapAddress, offset = offset)
+    this.opStack[++this.sp] = value.toIntBigEndian()
+}
+
+private fun Interpreter.hfload() {
+    val heapAddress = consumeInstructionOperand().toIntBigEndian()
+    val offset = this.opStack[this.sp--] as Int
+
+    val value: Word = this.heap.load(address = heapAddress, offset = offset)
+    this.opStack[++this.sp] = value.toFloatBigEndian()
+}
+
+private fun Interpreter.hcload() {
+    val heapAddress = consumeInstructionOperand().toIntBigEndian()
+    val offset = this.opStack[this.sp--] as Int
+
+    val value: Word = this.heap.load(address = heapAddress, offset = offset)
+    this.opStack[++this.sp] = value.toCharBigEndian()
+}
+
+private fun Interpreter.hsload() {
+    val heapAddress = consumeInstructionOperand().toIntBigEndian()
+    val offset = this.opStack[this.sp--] as Int
+
+    val value: Word = this.heap.load(address = heapAddress, offset = offset)
+    this.opStack[++this.sp] = (this.progDef.static[value.toIntBigEndian()] as StringLiteral).value
+}
+

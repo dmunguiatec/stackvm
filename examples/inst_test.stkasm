@@ -44,6 +44,10 @@
 
 .def main: args=1, locals=2
 
+; locals:
+;   0: array
+;   1: scalar
+
     ; -----------------------------------------------------
     ; Constants & Literals
     ; -----------------------------------------------------
@@ -203,6 +207,46 @@
     gstore 1
     gload 1
     assert "global"
+
+    ; -----------------------------------------------------
+    ; Memory Access (heap)
+    ; -----------------------------------------------------
+
+    iconst 10
+    alloc
+    store 0 ; array <- alloc(10)
+
+    fconst 3.14159
+    iconst 0
+    hstore 0 ; array[0] <- 3.14159
+
+    cconst 'a'
+    iconst 1
+    hstore 0 ; array[1] <- 'a'
+
+    iconst -1
+    iconst 2
+    hstore 0 ; array[2] <- -1
+
+    sconst "hello"
+    iconst 3
+    hstore 0 ; array[3] <- "hello"
+
+    iconst 0
+    hfload 0 ; load(array[0])
+    assert 3.14159
+
+    iconst 1
+    hcload 0 ; load(array[1])
+    assert 'a'
+
+    iconst 2
+    hiload 0 ; load(array[2])
+    assert -1
+
+    iconst 3
+    hsload 0 ; load(array[3])
+    assert "helloz"
 
     ; -----------------------------------------------------
     ; Stack Manipulation

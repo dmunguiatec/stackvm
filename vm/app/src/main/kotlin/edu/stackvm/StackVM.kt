@@ -24,6 +24,7 @@ import kotlin.io.path.extension
 
 private const val DEFAULT_OPERAND_STACK_SIZE = 1024
 private const val DEFAULT_CALL_STACK_SIZE = 1024
+private const val DEFAULT_HEAP_SIZE = 1024
 
 private const val EXTENSION_STKASM = "stkasm"
 private const val EXTENSION_STKBIN = "stk"
@@ -62,6 +63,8 @@ class CommandLine : CliktCommand(name = "stackvm") {
         .default(DEFAULT_OPERAND_STACK_SIZE)
     val callStackSize: Int by option("-c", "--call-stack-size", help = "vm call stack size (default: 1024 entries)").int()
         .default(DEFAULT_CALL_STACK_SIZE)
+    val heapSize: Int by option("-x", "--heap-size", help = "vm heap size (default: 1024 entries)").int()
+        .default(DEFAULT_HEAP_SIZE)
     val args: List<String> by option("-a", "--args", help = "arguments to pass to the program").multiple()
 
     override fun help(context: Context): String = "Stack-based virtual machine toolkit"
@@ -91,7 +94,8 @@ class CommandLine : CliktCommand(name = "stackvm") {
                 val interpreter = Interpreter(
                     deserializedProgDef, processArgs(this.args),
                     this.stackSize,
-                    this.callStackSize
+                    this.callStackSize,
+                    this.heapSize
                 )
 
                 interpreter.run()

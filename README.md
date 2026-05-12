@@ -51,6 +51,14 @@ Simple stack based bytecode virtual machine
         * [store](#store)
         * [gload](#gload)
         * [gstore](#gstore)
+        * [alloc](#alloc)
+        * [free](#free)
+        * [hstore](#hstore)
+        * [hiload](#hiload)
+        * [hfload](#hfload)
+        * [hcload](#hcload)
+        * [hsload](#hsload)
+    
     * [Input / Output](#input--output)
 
         * [print](#print)
@@ -472,6 +480,111 @@ iconst 10
 gstore 2 ; globals[2] <- 10
 ```
 
+#### alloc
+
+Allocates a memory block of the given size in the heap and pushes a pointer to the allocated memory.
+
+```
+; locals:
+; 0: array_ptr
+
+iconst 10
+alloc ; pushes a pointer to the allocated memory onto the stack
+store 0 ; array_ptr <- pointer to the allocated memory
+```
+
+#### free
+
+Frees the heap memory block pointed to by the top of the stack.
+
+```
+; locals:
+; 0: array_ptr
+
+load 0 ; assuming array_ptr contains the pointer to the allocated memory, pushes it onto the stack
+free 
+```
+
+#### hstore
+
+Stores a value at the given offset in the heap memory block pointed to by the top of the stack.
+
+```
+; locals:
+; 0: array_ptr
+
+iconst 10
+alloc ; allocates a memory block of size 10
+store 0 ; array_ptr <- pointer to the allocated memory
+
+fconst 3.14159 ; the value to be stored
+iconst 0 ; offset i = 0
+hstore 0 ; array_ptr[0] <- 3.14159
+```
+
+#### hiload
+
+Loads a value from an allocated heap memory block at the given offset.
+
+```
+; locals:
+; 0: array_ptr
+
+iconst 10
+alloc ; allocates a memory block of size 10
+store 0 ; array_ptr <- pointer to the allocated memory
+
+iconst 3; offset i = 3
+hiload 0 ; pushes array_ptr[3] as an integer onto the stack
+```
+
+#### hfload
+
+Loads a value from an allocated heap memory block at the given offset.
+
+```
+; locals:
+; 0: array_ptr
+
+iconst 10
+alloc ; allocates a memory block of size 10
+store 0 ; array_ptr <- pointer to the allocated memory
+
+iconst 3; offset i = 3
+hfload 0 ; pushes array_ptr[3] as a floating point number onto the stack
+```
+
+#### hcload
+
+Loads a value from an allocated heap memory block at the given offset.
+
+```
+; locals:
+; 0: array_ptr
+
+iconst 10
+alloc ; allocates a memory block of size 10
+store 0 ; array_ptr <- pointer to the allocated memory
+
+iconst 3; offset i = 3
+hcload 0 ; pushes array_ptr[3] as a character onto the stack
+```
+
+#### hsload
+
+Loads a value from an allocated heap memory block at the given offset.
+
+```
+; locals:
+; 0: array_ptr
+
+iconst 10
+alloc ; allocates a memory block of size 10
+store 0 ; array_ptr <- pointer to the allocated memory
+
+iconst 3; offset i = 3
+hsload 0 ; pushes array_ptr[3] as a string onto the stack
+```
 ---
 
 ## Input / Output
