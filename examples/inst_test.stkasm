@@ -38,6 +38,42 @@
     iadd             ; input + 99
     ret
 
+.def strtraverse: args=1, locals=2
+    ; locals:
+    ;    1: strlen
+    ;    2: i
+    load 0
+    slen
+    store 1 ; strlen <- slen("Hello World")
+    iconst 0
+    store 2 ; i <- 0
+
+strtrv_loop:
+    ; i < strlen
+    load 2
+    load 1
+    ilt
+    jmpf strtrv_end
+
+    ; print(s[i])
+    load 0
+    load 2
+    sget
+    print
+
+    ; i++
+    load 2
+    iconst 1
+    iadd
+    store 2
+    jmp strtrv_loop
+
+strtrv_end:
+    ret
+
+
+
+
 ; =========================================================
 ; Main test runner
 ; =========================================================
@@ -246,7 +282,22 @@
 
     iconst 3
     hsload 0 ; load(array[3])
-    assert "helloz"
+    assert "hello"
+
+    ; -----------------------------------------------------
+    ; String Operations
+    ; -----------------------------------------------------
+    sconst "Hello World"
+    slen
+    assert 11
+
+    sconst "Hello World"
+    iconst 6
+    sget
+    assert 'W'
+
+    sconst "Hello World"
+    call strtraverse()
 
     ; -----------------------------------------------------
     ; Stack Manipulation

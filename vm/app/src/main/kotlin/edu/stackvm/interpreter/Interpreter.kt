@@ -108,6 +108,8 @@ class Interpreter(
                 HFLOAD -> hfload()
                 HCLOAD -> hcload()
                 HSLOAD -> hsload()
+                SLEN -> slen()
+                SGET -> sget()
 
                 else -> error("Unknown instruction: $bytecode at address ${this.ip - 1}.")
             }
@@ -427,3 +429,13 @@ private fun Interpreter.hsload() {
     this.opStack[++this.sp] = (this.progDef.static[value.toIntBigEndian()] as StringLiteral).value
 }
 
+private fun Interpreter.slen() {
+    val string = this.opStack[this.sp--] as String
+    this.opStack[++this.sp] = string.length
+}
+
+private fun Interpreter.sget() {
+    val index = this.opStack[this.sp--] as Int
+    val string = this.opStack[this.sp--] as String
+    this.opStack[++this.sp] = string[index]
+}

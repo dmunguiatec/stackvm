@@ -39,7 +39,9 @@ enum class Bytecode(val code: UByte, val instruction: String, val operandCount: 
     HILOAD(35u, "hiload", operandCount = 1), // loads an integer value from a heap block
     HFLOAD(36u, "hfload", operandCount = 1), // loads a floating point value from a heap block
     HCLOAD(37u, "hcload", operandCount = 1), // loads a character value from a heap block
-    HSLOAD(38u, "hsload", operandCount = 1); // loads a string value from a heap block
+    HSLOAD(38u, "hsload", operandCount = 1), // loads a string value from a heap block
+    SLEN(39u, "slen"), // returns the length of a string
+    SGET(40u, "sget"); // returns a character from a string
 
 
     companion object {

@@ -58,6 +58,10 @@ Simple stack based bytecode virtual machine
         * [hfload](#hfload)
         * [hcload](#hcload)
         * [hsload](#hsload)
+      
+    * [String Operations](#string-operations)
+        * [slen](#slen)
+        * [sget](#sget)
     
     * [Input / Output](#input--output)
 
@@ -584,6 +588,27 @@ store 0 ; array_ptr <- pointer to the allocated memory
 
 iconst 3; offset i = 3
 hsload 0 ; pushes array_ptr[3] as a string onto the stack
+```
+---
+## String Operations
+
+#### slen
+
+Calculates the length of a string value on the stack.
+
+```
+sconst "Hello World"
+slen ; pushes 11 onto the stack  
+```
+
+#### sget
+
+Calculates the character at the given zero-based index in a string value on the stack.
+
+```
+sconst "Hello World"
+iconst 6
+sget ; pushes character 'W' onto the stack 
 ```
 ---
 
